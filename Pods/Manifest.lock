@@ -1,0 +1,68 @@
+PODS:
+  - AFNetworking (3.2.1):
+    - AFNetworking/NSURLSession (= 3.2.1)
+    - AFNetworking/Reachability (= 3.2.1)
+    - AFNetworking/Security (= 3.2.1)
+    - AFNetworking/Serialization (= 3.2.1)
+    - AFNetworking/UIKit (= 3.2.1)
+  - AFNetworking/NSURLSession (3.2.1):
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+  - AFNetworking/Reachability (3.2.1)
+  - AFNetworking/Security (3.2.1)
+  - AFNetworking/Serialization (3.2.1)
+  - AFNetworking/UIKit (3.2.1):
+    - AFNetworking/NSURLSession
+  - LBCommonComponents (1.1.0):
+    - LBCommonComponents/Base (= 1.1.0)
+    - LBCommonComponents/Category (= 1.1.0)
+    - LBCommonComponents/Macros (= 1.1.0)
+  - LBCommonComponents/Base (1.1.0):
+    - LBCommonComponents/Base/Views (= 1.1.0)
+  - LBCommonComponents/Base/Views (1.1.0)
+  - LBCommonComponents/Category (1.1.0):
+    - "LBCommonComponents/Category/NSArray+Safe (= 1.1.0)"
+    - "LBCommonComponents/Category/NSDate+ToString (= 1.1.0)"
+    - "LBCommonComponents/Category/NSDictionary+Safe (= 1.1.0)"
+    - "LBCommonComponents/Category/NSNull+Safe (= 1.1.0)"
+    - "LBCommonComponents/Category/NSObject+MethodSwizzling (= 1.1.0)"
+    - "LBCommonComponents/Category/NSObject+TopViewController (= 1.1.0)"
+    - "LBCommonComponents/Category/NSObject+TypeSafe (= 1.1.0)"
+    - "LBCommonComponents/Category/NSString+ToDate (= 1.1.0)"
+    - "LBCommonComponents/Category/UIButton+Action (= 1.1.0)"
+    - "LBCommonComponents/Category/UIImage+Color (= 1.1.0)"
+    - "LBCommonComponents/Category/UIView+Copy (= 1.1.0)"
+    - "LBCommonComponents/Category/UIView+Geometry (= 1.1.0)"
+  - "LBCommonComponents/Category/NSArray+Safe (1.1.0)":
+    - "LBCommonComponents/Category/NSObject+MethodSwizzling"
+  - "LBCommonComponents/Category/NSDate+ToString (1.1.0)"
+  - "LBCommonComponents/Category/NSDictionary+Safe (1.1.0)":
+    - "LBCommonComponents/Category/NSObject+MethodSwizzling"
+  - "LBCommonComponents/Category/NSNull+Safe (1.1.0)"
+  - "LBCommonComponents/Category/NSObject+MethodSwizzling (1.1.0)"
+  - "LBCommonComponents/Category/NSObject+TopViewController (1.1.0)"
+  - "LBCommonComponents/Category/NSObject+TypeSafe (1.1.0)"
+  - "LBCommonComponents/Category/NSString+ToDate (1.1.0)"
+  - "LBCommonComponents/Category/UIButton+Action (1.1.0)"
+  - "LBCommonComponents/Category/UIImage+Color (1.1.0)"
+  - "LBCommonComponents/Category/UIView+Copy (1.1.0)"
+  - "LBCommonComponents/Category/UIView+Geometry (1.1.0)"
+  - LBCommonComponents/Macros (1.1.0)
+
+DEPENDENCIES:
+  - AFNetworking
+  - LBCommonComponents
+
+SPEC REPOS:
+  trunk:
+    - AFNetworking
+    - LBCommonComponents
+
+SPEC CHECKSUMS:
+  AFNetworking: b6f891fdfaed196b46c7a83cf209e09697b94057
+  LBCommonComponents: 18620e3013c1d3c1b89788acc3899ef24f84755d
+
+PODFILE CHECKSUM: fe4a91642707d3e0bc312442392136db55fa3be6
+
+COCOAPODS: 1.10.0
