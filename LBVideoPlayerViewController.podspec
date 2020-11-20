@@ -15,3 +15,4 @@ Pod::Spec.new do |spec|
   spec.source_files = "LBVideoPlayerViewController/**/*.{h,m}"
   spec.requires_arc = true
 end
+#--use-libraries
