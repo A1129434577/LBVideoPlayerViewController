@@ -160,8 +160,8 @@
 			isa = PBXGroup;
 			children = (
 				40E97AEC2567D05F00B0EA7B /* LBVideoPlayerView */,
-				40E97AEB2567D05F00B0EA7B /* LBVideoPlayerViewController.m */,
 				40E97AF12567D05F00B0EA7B /* LBVideoPlayerViewController.h */,
+				40E97AEB2567D05F00B0EA7B /* LBVideoPlayerViewController.m */,
 			);
 			path = LBVideoPlayerViewController;
 			sourceTree = SOURCE_ROOT;

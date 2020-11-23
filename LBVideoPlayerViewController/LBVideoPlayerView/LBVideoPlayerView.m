@@ -201,23 +201,7 @@
 - (YCVideoCoverView *)videoCenterView{
     if (!_videoCenterView) {
         YCVideoCoverView *videoCenterView = [[YCVideoCoverView alloc] initWithFrame:self.bounds];
-        __weak typeof(self) weakSelf = self;
-        videoCenterView.loadingBtn.lb_action = ^(UIButton * _Nonnull sender) {
-            if (weakSelf.status == YCVideoViewStateLoadFaild) {
-                weakSelf.status = YCVideoViewStateLoading;
-                if (weakSelf.player.currentItem) {
-                    AVPlayerItem * playerItem = weakSelf.player.currentItem;
-                    [playerItem removeObserver:weakSelf forKeyPath:NSStringFromSelector(@selector(status))];
-                    [playerItem removeObserver:weakSelf forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges))];
-                }
-                AVPlayerItem * playerItem = [AVPlayerItem playerItemWithURL:weakSelf.url?weakSelf.url:[NSURL URLWithString:@""]];
-                [playerItem addObserver:weakSelf forKeyPath:NSStringFromSelector(@selector(status)) options:NSKeyValueObservingOptionNew context:nil];
-                [playerItem addObserver:weakSelf forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges)) options:NSKeyValueObservingOptionNew context:nil];
-                [weakSelf.player replaceCurrentItemWithPlayerItem:playerItem];
-            }else{
-                weakSelf.status = YCVideoViewStatePlaying;
-            }
-        };
+        [videoCenterView.loadingBtn addTarget:self action:@selector(loadingBtnAction:) forControlEvents:UIControlEventTouchUpInside];
         _videoCenterView = videoCenterView;
     }
     return _videoCenterView;
@@ -229,7 +213,6 @@
     if (!_bottomActionsView) {
         NSBundle *bundle = [LBVideoPlayerView LBVideoPlayerViewBundle];
         
-        __weak typeof(self) weakSelf = self;
         UIView *bottomActionsView = [[UIView alloc] initWithFrame:CGRectMake(0, CGRectGetHeight([UIScreen mainScreen].bounds)-(50+LB_SAFE_AREA_BOTTOM_HEIGHT(self.viewController)), CGRectGetWidth(self.frame), 50+LB_SAFE_AREA_BOTTOM_HEIGHT(self.viewController))];
         bottomActionsView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
         bottomActionsView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleTopMargin;
@@ -241,15 +224,9 @@
         playBtn.autoresizingMask = UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleBottomMargin;
         [playBtn setImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"play_icon@3x" ofType:@"png"]] forState:UIControlStateNormal];
         [playBtn setImage:[UIImage imageWithContentsOfFile:[bundle pathForResource:@"pause_icon@3x" ofType:@"png"]] forState:UIControlStateSelected];
+        [playBtn addTarget:self action:@selector(playBtnAction:) forControlEvents:UIControlEventTouchUpInside];
         [bottomActionsView addSubview:playBtn];
         _playBtn = playBtn;
-        playBtn.lb_action = ^(UIButton * _Nonnull sender) {
-            if (sender.selected) {
-                weakSelf.status = YCVideoViewStatePause;
-            }else if (weakSelf.status == YCVideoViewStateReadyToPlay || weakSelf.status == YCVideoViewStatePause) {
-                weakSelf.status = YCVideoViewStatePlaying;
-            }
-        };
         
         
         UIButton *fullScreenBtn = [[UIButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(bottomActionsView.frame)-25-30, (CGRectGetHeight(bottomActionsView.frame)-25)/2.f, 25, 25)];
@@ -458,6 +435,30 @@
         self.status = YCVideoViewStatePause;
     }
     [_player seekToTime:CMTimeMultiplyByFloat64(_player.currentItem.duration, self.progressSlider.value) toleranceBefore:kCMTimeZero toleranceAfter:kCMTimeZero];
+}
+#pragma mark ButtonAction
+-(void)loadingBtnAction:(UIButton *)sender{
+    if (self.status == YCVideoViewStateLoadFaild) {
+        self.status = YCVideoViewStateLoading;
+        if (self.player.currentItem) {
+            AVPlayerItem * playerItem = self.player.currentItem;
+            [playerItem removeObserver:self forKeyPath:NSStringFromSelector(@selector(status))];
+            [playerItem removeObserver:self forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges))];
+        }
+        AVPlayerItem * playerItem = [AVPlayerItem playerItemWithURL:self.url?self.url:[NSURL URLWithString:@""]];
+        [playerItem addObserver:self forKeyPath:NSStringFromSelector(@selector(status)) options:NSKeyValueObservingOptionNew context:nil];
+        [playerItem addObserver:self forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges)) options:NSKeyValueObservingOptionNew context:nil];
+        [self.player replaceCurrentItemWithPlayerItem:playerItem];
+    }else{
+        self.status = YCVideoViewStatePlaying;
+    }
+}
+-(void)playBtnAction:(UIButton *)sender{
+    if (sender.selected) {
+        self.status = YCVideoViewStatePause;
+    }else if (self.status == YCVideoViewStateReadyToPlay || self.status == YCVideoViewStatePause) {
+        self.status = YCVideoViewStatePlaying;
+    }
 }
 #pragma mark private
 

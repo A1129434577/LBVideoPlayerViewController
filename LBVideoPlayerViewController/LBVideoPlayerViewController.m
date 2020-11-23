@@ -89,38 +89,10 @@
     // Do any additional setup after loading the view.
     
     LBVideoPlayerView *videoView = [[LBVideoPlayerView alloc] initWithFrame:self.view.bounds url:self.videoUrl viewController:self];
+    [videoView.backButton addTarget:self action:@selector(backButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+    [videoView.fullScreenButton addTarget:self action:@selector(fullScreenButtonAction:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:videoView];
     _videoView = videoView;
-    
-    
-    __weak typeof(videoView) weakVideoView = videoView;
-    __weak typeof(self) weakSelf = self;
-    
-    videoView.backButton.lb_action = ^(UIButton * _Nonnull sender) {
-        if (weakSelf.currentOrientation == UIInterfaceOrientationLandscapeRight) {
-            __weak typeof(weakVideoView.fullScreenButton) weakFullScreenButton = weakVideoView.fullScreenButton;
-            weakVideoView.fullScreenButton.lb_action?
-            weakVideoView.fullScreenButton.lb_action(weakFullScreenButton):NULL;
-        }else{
-            if (weakSelf.presentingViewController) {
-                [weakSelf dismissViewControllerAnimated:YES completion:nil];
-            }else{
-                [weakSelf.navigationController popViewControllerAnimated:YES];
-            }
-        }
-    };
-    
-    
-    videoView.fullScreenButton.lb_action = ^(UIButton * _Nonnull sender) {
-        sender.selected = !sender.selected;
-        if (sender.selected) {
-            weakSelf.currentOrientation = UIInterfaceOrientationLandscapeRight;
-        }
-        else {
-            weakSelf.currentOrientation = UIInterfaceOrientationPortrait;
-        }
-        [weakSelf lb_interfaceOrientation:weakSelf.currentOrientation];
-    };
 }
 
 - (void)viewWillLayoutSubviews {
@@ -137,5 +109,27 @@
     [super viewWillDisappear:animated];
     self.navigationController.navigationBarHidden = NO;
     [UIScreen mainScreen].brightness = self.brightness;
+}
+#pragma mark ButtonAction
+-(void)backButtonAction:(UIButton *)sender{
+    if (self.currentOrientation == UIInterfaceOrientationLandscapeRight) {
+        [self fullScreenButtonAction:self.videoView.fullScreenButton];
+    }else{
+        if (self.presentingViewController) {
+            [self dismissViewControllerAnimated:YES completion:nil];
+        }else{
+            [self.navigationController popViewControllerAnimated:YES];
+        }
+    }
+}
+-(void)fullScreenButtonAction:(UIButton *)sender{
+    sender.selected = !sender.selected;
+    if (sender.selected) {
+        self.currentOrientation = UIInterfaceOrientationLandscapeRight;
+    }
+    else {
+        self.currentOrientation = UIInterfaceOrientationPortrait;
+    }
+    [self lb_interfaceOrientation:self.currentOrientation];
 }
 @end

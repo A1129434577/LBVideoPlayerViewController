@@ -9,7 +9,6 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 #import "LBUIMacro.h"
-#import "UIButton+LBAction.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
