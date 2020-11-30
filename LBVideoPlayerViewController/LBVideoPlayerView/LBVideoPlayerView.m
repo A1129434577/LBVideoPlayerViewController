@@ -481,9 +481,7 @@
                     if (weakSelf.status == YCVideoViewStatePlaying) {
                         weakSelf.status = YCVideoViewStatePause;
                     }
-                    NSData *mediaData = [NSData dataWithContentsOfURL:weakSelf.url];
-                    CGFloat videoSize = mediaData.length/1024.f/1024.f;
-                    weakSelf.videoCenterView.prompt = [NSString stringWithFormat:@"正在使用非WiFi网络，播放预计消耗%.2fM流量",videoSize];
+                    weakSelf.videoCenterView.prompt = @"正在使用流量播放，是否继续？";
                 }
                     break;
                 case AFNetworkReachabilityStatusReachableViaWiFi:
