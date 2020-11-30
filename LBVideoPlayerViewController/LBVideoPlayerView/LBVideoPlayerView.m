@@ -10,6 +10,8 @@
 #import <MediaPlayer/MediaPlayer.h>
 #import <AFNetworking/AFNetworking.h>
 
+static BOOL LBVideoPlayerTrafficPlayHasPrompt = NO;
+static BOOL LBVideoPlayerTrafficHasAutoPlay = NO;
 
 @interface LBVideoPlayerView ()
 @property (nonatomic, strong) NSURL          *url;
@@ -37,6 +39,13 @@
 @end
 
 @implementation LBVideoPlayerView
+//+(void)load{
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(LBVideoPlayer_ApplicationDidFinishLaunching:) name:UIApplicationDidFinishLaunchingNotification object:nil];
+//}
+//+(void)LBVideoPlayer_ApplicationDidFinishLaunching:(NSNotification *)notification{
+//    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:LBVideoPlayerTrafficPlayKey];
+//    [[NSUserDefaults standardUserDefaults] synchronize];
+//}
 +(Class)layerClass{
     return AVPlayerLayer.self;
 }
@@ -73,7 +82,7 @@
         if (url) {
             AVPlayerItem * playerItem = [AVPlayerItem playerItemWithURL:url];
             [playerItem addObserver:self forKeyPath:NSStringFromSelector(@selector(status)) options:NSKeyValueObservingOptionNew context:nil];
-            [playerItem addObserver:self forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges)) options:NSKeyValueObservingOptionNew context:nil];
+//            [playerItem addObserver:self forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges)) options:NSKeyValueObservingOptionNew context:nil];
             [player replaceCurrentItemWithPlayerItem:playerItem];
         }
         
@@ -146,8 +155,12 @@
     [_player removeTimeObserver:_playTimeObserver];
     
     AVPlayerItem * playerItem = _player.currentItem;
-    [playerItem removeObserver:self forKeyPath:NSStringFromSelector(@selector(status))];
-    [playerItem removeObserver:self forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges))];
+    if ([self observerKeyPath:NSStringFromSelector(@selector(status))]) {
+        [playerItem removeObserver:self forKeyPath:NSStringFromSelector(@selector(status))];
+    }
+    if ([self observerKeyPath:NSStringFromSelector(@selector(loadedTimeRanges))]) {
+        [playerItem removeObserver:self forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges))];
+    }
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
@@ -297,6 +310,22 @@
     NSBundle *videoPlayerViewBundle = [NSBundle bundleWithPath:[[NSBundle bundleForClass:[self class]] pathForResource:@"LBVideoPlayerView" ofType:@"bundle"]];
     return videoPlayerViewBundle;
 }
+// 进行检索获取Key
+- (BOOL)observerKeyPath:(NSString *)key
+{
+    id info = self.player.currentItem.observationInfo;
+    NSArray *array = [info valueForKey:@"_observances"];
+    for (id objc in array) {
+        id Properties = [objc valueForKeyPath:@"_property"];
+        id newObserver = [objc valueForKeyPath:@"_observer"];
+        
+        NSString *keyPath = [Properties valueForKeyPath:@"_keyPath"];
+        if ([key isEqualToString:keyPath] && [newObserver isEqual:self]) {
+            return YES;
+        }
+    }
+    return NO;
+}
 #pragma mark setter
 -(void)setMediaUrl:(NSURL *)mediaUrl{
     _url = mediaUrl;
@@ -304,12 +333,17 @@
     self.status = YCVideoViewStateLoading;
     
     AVPlayerItem *currentPlayerItem = self.player.currentItem;
-    [currentPlayerItem removeObserver:self forKeyPath:NSStringFromSelector(@selector(status))];
-    [currentPlayerItem removeObserver:self forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges))];
+    if ([self observerKeyPath:NSStringFromSelector(@selector(status))]) {
+        [currentPlayerItem removeObserver:self forKeyPath:NSStringFromSelector(@selector(status))];
+    }
+    if ([self observerKeyPath:NSStringFromSelector(@selector(loadedTimeRanges))]) {
+        [currentPlayerItem removeObserver:self forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges))];
+    }
+    
     
     AVPlayerItem * playerItem = [AVPlayerItem playerItemWithURL:_url?_url:[NSURL URLWithString:@""]];
     [playerItem addObserver:self forKeyPath:NSStringFromSelector(@selector(status)) options:NSKeyValueObservingOptionNew context:nil];
-    [playerItem addObserver:self forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges)) options:NSKeyValueObservingOptionNew context:nil];
+//    [playerItem addObserver:self forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges)) options:NSKeyValueObservingOptionNew context:nil];
     [self.player replaceCurrentItemWithPlayerItem:playerItem];
 }
 -(void)setStatus:(YCVideoViewState)status{
@@ -323,6 +357,14 @@
         case YCVideoViewStatePlaying:
             self.playBtn.selected = YES;
             [self.player play];
+            
+            //点击了播放，则去除流量播放这个提醒
+            self.videoCenterView.prompt = nil;
+            LBVideoPlayerTrafficPlayHasPrompt = YES;
+            LBVideoPlayerTrafficHasAutoPlay = YES;
+            if ([self observerKeyPath:NSStringFromSelector(@selector(loadedTimeRanges))] == NO) {
+                [self.player.currentItem addObserver:self forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges)) options:NSKeyValueObservingOptionNew context:nil];
+            }
             break;
         case YCVideoViewStatePause:
             self.playBtn.selected = NO;
@@ -336,6 +378,7 @@
     
     self.videoCenterView.status = status;
 }
+
 
 #pragma mark KVO
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
@@ -355,7 +398,8 @@
                 NSInteger duration = CMTimeGetSeconds(_player.currentItem.duration);
                 self.timeLabel.text = [NSString stringWithFormat:@"00:00/%02ld:%02ld",duration/60,duration%60];
                 
-                if ([AFNetworkReachabilityManager sharedManager].networkReachabilityStatus == AFNetworkReachabilityStatusReachableViaWiFi) {//wifi自动播放
+                AFNetworkReachabilityStatus networkReachabilityStatus = [AFNetworkReachabilityManager sharedManager].networkReachabilityStatus;
+                if (networkReachabilityStatus == AFNetworkReachabilityStatusReachableViaWiFi || (networkReachabilityStatus == AFNetworkReachabilityStatusReachableViaWWAN && LBVideoPlayerTrafficHasAutoPlay == YES)) {//wifi或者以及提示过用流量播放的情况下自动播放
                     self.status = YCVideoViewStatePlaying;
                     [self hiddenOrShowToolBars];
                 }else{
@@ -442,12 +486,17 @@
         self.status = YCVideoViewStateLoading;
         if (self.player.currentItem) {
             AVPlayerItem * playerItem = self.player.currentItem;
-            [playerItem removeObserver:self forKeyPath:NSStringFromSelector(@selector(status))];
-            [playerItem removeObserver:self forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges))];
+            if ([self observerKeyPath:NSStringFromSelector(@selector(status))]) {
+                [playerItem removeObserver:self forKeyPath:NSStringFromSelector(@selector(status))];
+            }
+            if ([self observerKeyPath:NSStringFromSelector(@selector(loadedTimeRanges))]) {
+                [playerItem removeObserver:self forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges))];
+            }
+            
         }
         AVPlayerItem * playerItem = [AVPlayerItem playerItemWithURL:self.url?self.url:[NSURL URLWithString:@""]];
         [playerItem addObserver:self forKeyPath:NSStringFromSelector(@selector(status)) options:NSKeyValueObservingOptionNew context:nil];
-        [playerItem addObserver:self forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges)) options:NSKeyValueObservingOptionNew context:nil];
+//        [playerItem addObserver:self forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges)) options:NSKeyValueObservingOptionNew context:nil];
         [self.player replaceCurrentItemWithPlayerItem:playerItem];
     }else{
         self.status = YCVideoViewStatePlaying;
@@ -478,10 +527,12 @@
                     break;
                 case AFNetworkReachabilityStatusReachableViaWWAN:
                 {
-                    if (weakSelf.status == YCVideoViewStatePlaying) {
-                        weakSelf.status = YCVideoViewStatePause;
+                    if (LBVideoPlayerTrafficPlayHasPrompt == NO) {
+                        if (weakSelf.status == YCVideoViewStatePlaying) {
+                            weakSelf.status = YCVideoViewStatePause;
+                        }
+                        weakSelf.videoCenterView.prompt = @"正在使用流量播放，是否继续？";
                     }
-                    weakSelf.videoCenterView.prompt = @"正在使用流量播放，是否继续？";
                 }
                     break;
                 case AFNetworkReachabilityStatusReachableViaWiFi:
