@@ -358,10 +358,6 @@ static BOOL LBVideoPlayerTrafficHasAutoPlay = NO;
             self.playBtn.selected = YES;
             [self.player play];
             
-            //点击了播放，则去除流量播放这个提醒
-            self.videoCenterView.prompt = nil;
-            LBVideoPlayerTrafficPlayHasPrompt = YES;
-            LBVideoPlayerTrafficHasAutoPlay = YES;
             if ([self observerKeyPath:NSStringFromSelector(@selector(loadedTimeRanges))] == NO) {
                 [self.player.currentItem addObserver:self forKeyPath:NSStringFromSelector(@selector(loadedTimeRanges)) options:NSKeyValueObservingOptionNew context:nil];
             }
@@ -500,6 +496,13 @@ static BOOL LBVideoPlayerTrafficHasAutoPlay = NO;
         [self.player replaceCurrentItemWithPlayerItem:playerItem];
     }else{
         self.status = YCVideoViewStatePlaying;
+        
+        //点击了播放，则去除流量播放这个提醒
+        if ([AFNetworkReachabilityManager sharedManager].networkReachabilityStatus == AFNetworkReachabilityStatusReachableViaWWAN) {
+            self.videoCenterView.prompt = nil;
+            LBVideoPlayerTrafficPlayHasPrompt = YES;
+            LBVideoPlayerTrafficHasAutoPlay = YES;
+        }
     }
 }
 -(void)playBtnAction:(UIButton *)sender{
@@ -507,6 +510,13 @@ static BOOL LBVideoPlayerTrafficHasAutoPlay = NO;
         self.status = YCVideoViewStatePause;
     }else if (self.status == YCVideoViewStateReadyToPlay || self.status == YCVideoViewStatePause) {
         self.status = YCVideoViewStatePlaying;
+        
+        //点击了播放，则去除流量播放这个提醒
+        if ([AFNetworkReachabilityManager sharedManager].networkReachabilityStatus == AFNetworkReachabilityStatusReachableViaWWAN) {
+            self.videoCenterView.prompt = nil;
+            LBVideoPlayerTrafficPlayHasPrompt = YES;
+            LBVideoPlayerTrafficHasAutoPlay = YES;
+        }
     }
 }
 #pragma mark private
