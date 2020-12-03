@@ -15,9 +15,13 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface LBVideoPlayerViewController : UIViewController<LBSupportedInterfaceOrientationsDelegate>
-- (instancetype)initWithVideoUrl:(NSURL *)videoUrl;
 - (void)lb_interfaceOrientation:(UIInterfaceOrientation)orientation;
 - (UIInterfaceOrientationMask)lb_supportedInterfaceOrientations;
+
+/// 初始化
+/// @param videoUrl 视频地址
+/// @param sourceView 可以通过设置sourceView改变其推出动画，如果sourceView不为空，推出动画将从sourceView开始，如果sourceView为空，则为系统默认推出动画
+- (instancetype)initWithVideoUrl:(nullable NSURL *)videoUrl sourceView:(nullable UIView *)sourceView;
 @end
 
 NS_ASSUME_NONNULL_END

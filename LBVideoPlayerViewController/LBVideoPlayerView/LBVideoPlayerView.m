@@ -39,13 +39,6 @@ static BOOL LBVideoPlayerTrafficHasAutoPlay = NO;
 @end
 
 @implementation LBVideoPlayerView
-//+(void)load{
-//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(LBVideoPlayer_ApplicationDidFinishLaunching:) name:UIApplicationDidFinishLaunchingNotification object:nil];
-//}
-//+(void)LBVideoPlayer_ApplicationDidFinishLaunching:(NSNotification *)notification{
-//    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:LBVideoPlayerTrafficPlayKey];
-//    [[NSUserDefaults standardUserDefaults] synchronize];
-//}
 +(Class)layerClass{
     return AVPlayerLayer.self;
 }
@@ -63,6 +56,7 @@ static BOOL LBVideoPlayerTrafficHasAutoPlay = NO;
         
         UIPanGestureRecognizer *panGesture =[[UIPanGestureRecognizer alloc]initWithTarget:self action:@selector(panGestureAction:)];
         [self addGestureRecognizer:panGesture];
+        _panGesture  = panGesture;
         
         
         _url = url;
@@ -268,7 +262,8 @@ static BOOL LBVideoPlayerTrafficHasAutoPlay = NO;
         _progressView = progressView;
         
         
-        UISlider *progressSlider = [[UISlider alloc] initWithFrame:CGRectMake(CGRectGetMinX(progressView.frame)-3, CGRectGetMinY(progressView.frame)+2, CGRectGetWidth(progressView.frame)+3*2, 1)];
+        UISlider *progressSlider = [[UISlider alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(progressView.frame)+3*2, 1)];
+        progressSlider.center = progressView.center;
         progressSlider.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleBottomMargin;
         progressSlider.minimumTrackTintColor = [UIColor whiteColor];
         progressSlider.maximumTrackTintColor = [UIColor clearColor];
@@ -397,7 +392,7 @@ static BOOL LBVideoPlayerTrafficHasAutoPlay = NO;
                 AFNetworkReachabilityStatus networkReachabilityStatus = [AFNetworkReachabilityManager sharedManager].networkReachabilityStatus;
                 if (networkReachabilityStatus == AFNetworkReachabilityStatusReachableViaWiFi || (networkReachabilityStatus == AFNetworkReachabilityStatusReachableViaWWAN && LBVideoPlayerTrafficHasAutoPlay == YES)) {//wifi或者以及提示过用流量播放的情况下自动播放
                     self.status = YCVideoViewStatePlaying;
-                    [self hiddenOrShowToolBars];
+                    [self hiddenToolBars:YES animation:YES];
                 }else{
                     self.status = YCVideoViewStateReadyToPlay;
                 }
@@ -620,27 +615,31 @@ static BOOL LBVideoPlayerTrafficHasAutoPlay = NO;
     CGPoint point = [tapGesture locationInView:self];
     
     if (!CGRectContainsPoint(self.bottomActionsView.frame, point) && !CGRectContainsPoint(CGRectMake(0, 0, CGRectGetWidth(self.topActionsView.frame), CGRectGetMaxY(self.topActionsView.frame)), point)) {
-        [self hiddenOrShowToolBars];
+        [self hiddenToolBars:(CGRectGetMinY(_topActionsView.frame) == 0) animation:YES];
     }
 }
--(void)hiddenOrShowToolBars{
+
+-(void)hiddenToolBars:(BOOL)hidden animation:(BOOL)animation{
     CGRect topActionsViewFrame = _topActionsView.frame;
     CGRect bottomActionsViewFrame = _bottomActionsView.frame;
     
-    if (CGRectGetMinY(topActionsViewFrame) == 0) {
+    if (hidden) {
         topActionsViewFrame.origin.y = -CGRectGetHeight(topActionsViewFrame);
         bottomActionsViewFrame.origin.y = CGRectGetHeight([UIScreen mainScreen].bounds);
     }else{
+        self.topActionsView.hidden = self.bottomActionsView.hidden = NO;
         topActionsViewFrame.origin.y = 0;
         bottomActionsViewFrame.origin.y = CGRectGetHeight(self.frame)-CGRectGetHeight(bottomActionsViewFrame);
     }
-    [UIView animateWithDuration:0.2 animations:^{
+    [UIView animateWithDuration:(animation?0.2:0) animations:^{
         self.topActionsView.frame = topActionsViewFrame;
         self.bottomActionsView.frame = bottomActionsViewFrame;
+    } completion:^(BOOL finished) {
+        if (hidden) {
+            self.topActionsView.hidden = self.bottomActionsView.hidden = YES;
+        }
     }];
-    
 }
-
 
 -(void)panGestureAction:(UIPanGestureRecognizer *)panGesture{
     CGPoint point=[panGesture translationInView:panGesture.view];

@@ -27,7 +27,9 @@ typedef NS_ENUM(NSUInteger, YCVideoViewState) {
 @property (nonatomic, strong) UIButton *backButton;
 @property (nonatomic, strong) UIButton *moreButton;
 @property (nonatomic, strong) UIButton *fullScreenButton;
+@property (nonatomic, strong, readonly) UIPanGestureRecognizer *panGesture;//声音、亮度、进度手势
 - (instancetype)initWithFrame:(CGRect)frame url:(nullable NSURL *)url viewController:(UIViewController *)vc;
+-(void)hiddenToolBars:(BOOL)hidden animation:(BOOL)animation;
 @end
 
 @interface YCVideoLoadingButton : UIButton
