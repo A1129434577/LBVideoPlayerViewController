@@ -188,7 +188,9 @@ typedef enum {
             _startPoint = location;
             _startCenter = self.videoView.center;
             
-            self.videoView.frame = layer.videoRect;
+            if (CGRectIsEmpty(layer.videoRect) == NO) {
+                self.videoView.frame = layer.videoRect;
+            }
             [self.videoView hiddenToolBars:YES animation:NO];
         }
             break;
