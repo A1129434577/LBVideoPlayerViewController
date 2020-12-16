@@ -30,6 +30,7 @@ typedef enum {
 @property (nonatomic, strong) NSURL *videoUrl;
 
 @property (nonatomic , assign)BOOL panGestureWorking;
+@property (nonatomic , assign)BOOL dismissAnimationInProgress;
 @property (nonatomic , assign)CGPoint startPoint;
 @property (nonatomic , assign)CGPoint startCenter;
 
@@ -132,7 +133,7 @@ typedef enum {
 
 - (void)viewWillLayoutSubviews {
     [super viewWillLayoutSubviews];
-    if (self.panGestureWorking == NO) {
+    if (self.panGestureWorking == NO && self.dismissAnimationInProgress == NO) {
         _videoView.frame = self.view.bounds;
     }
 }
@@ -177,7 +178,7 @@ typedef enum {
 #pragma mark - 手势处理
 
 - (void)panGestureAction:(UIPanGestureRecognizer *)pan {
-    AVPlayerLayer *layer = self.videoView.layer;
+    AVPlayerLayer *layer = (AVPlayerLayer *)self.videoView.layer;
     
     CGPoint location = [pan locationInView:self.view];
     CGPoint point = [pan translationInView:self.view];
@@ -249,11 +250,9 @@ typedef enum {
         //目标控制器
         LBVideoPlayerViewController *toViewController = (LBVideoPlayerViewController *)[transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
         [containerView addSubview:toViewController.view];
-        
-        CGRect sourceViewFrameInWindow = [LB_KEY_WINDOW convertRect:toViewController.sourceView.frame fromView:toViewController.sourceView.superview];
-        
-        toViewController.view.transform = CGAffineTransformScale(CGAffineTransformIdentity, CGRectGetWidth(sourceViewFrameInWindow)/CGRectGetWidth(toViewController.view.frame), CGRectGetHeight(sourceViewFrameInWindow)/CGRectGetHeight(toViewController.view.frame));
-        toViewController.view.center = CGPointMake(CGRectGetMidX(sourceViewFrameInWindow), CGRectGetMidY(sourceViewFrameInWindow));
+                
+        toViewController.view.transform = CGAffineTransformScale(CGAffineTransformIdentity, CGRectGetWidth(toViewController.sourceView.bounds)/CGRectGetWidth(toViewController.view.bounds), CGRectGetHeight(toViewController.sourceView.bounds)/CGRectGetHeight(toViewController.view.bounds));
+        toViewController.view.center = [LB_KEY_WINDOW convertPoint:toViewController.sourceView.center fromView:toViewController.sourceView.superview];
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] animations:^{
             toViewController.view.transform = CGAffineTransformIdentity;
@@ -261,7 +260,8 @@ typedef enum {
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
         }];
-    }else if (self.type == LBVideoPlayerAnimationTypeDismiss){
+    }
+    else if (self.type == LBVideoPlayerAnimationTypeDismiss){
         containerView.backgroundColor = [UIColor clearColor];
         
         //源控制器
@@ -269,12 +269,17 @@ typedef enum {
         [fromViewController.videoView hiddenToolBars:YES animation:NO];
         fromViewController.view.backgroundColor = [UIColor clearColor];
         
-        CGRect sourceViewFrameInWindow = [LB_KEY_WINDOW convertRect:fromViewController.sourceView.frame fromView:fromViewController.sourceView.superview];
+        fromViewController.dismissAnimationInProgress = YES;
+        
+        fromViewController.videoView.layer.cornerRadius = fromViewController.sourceView.layer.cornerRadius;
+        
         [UIView animateWithDuration:[self transitionDuration:transitionContext] animations:^{
-            fromViewController.view.transform = CGAffineTransformScale(CGAffineTransformIdentity, 0.01, 0.01);
-            fromViewController.view.center = CGPointMake(CGRectGetMidX(sourceViewFrameInWindow), CGRectGetMidY(sourceViewFrameInWindow));
+            fromViewController.videoView.transform = CGAffineTransformScale(CGAffineTransformIdentity, CGRectGetWidth(fromViewController.sourceView.bounds)/CGRectGetWidth(fromViewController.videoView.bounds), CGRectGetHeight(fromViewController.sourceView.bounds)/CGRectGetHeight(fromViewController.videoView.bounds));
+            
+            fromViewController.videoView.center = [LB_KEY_WINDOW convertPoint:fromViewController.sourceView.center fromView:fromViewController.sourceView.superview];
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
+            fromViewController.dismissAnimationInProgress = NO;
         }];
     }
     

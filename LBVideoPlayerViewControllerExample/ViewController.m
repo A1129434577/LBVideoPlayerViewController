@@ -16,18 +16,16 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-}
--(void)viewDidAppear:(BOOL)animated{
-    [super viewDidAppear:animated];
     
-    [self videoPlayer];
+    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake((CGRectGetWidth(self.view.frame)-300)/2, 150, 300, 400)];
+    btn.backgroundColor = [UIColor lightGrayColor];
+    btn.layer.cornerRadius = 10;
+    [btn setTitle:@"播放视频" forState:UIControlStateNormal];
+    [btn addTarget:self action:@selector(videoPlay:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:btn];
 }
-
--(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
-    [self videoPlayer];
-}
--(void)videoPlayer{
-    LBVideoPlayerViewController *videoPlayer = [[LBVideoPlayerViewController alloc] initWithVideoUrl:[NSURL URLWithString:@"http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"]];
+-(void)videoPlay:(UIButton *)sender{
+    LBVideoPlayerViewController *videoPlayer = [[LBVideoPlayerViewController alloc] initWithVideoUrl:[NSURL URLWithString:@"http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"] sourceView:sender];
     [self presentViewController:videoPlayer animated:YES completion:NULL];
 }
 
