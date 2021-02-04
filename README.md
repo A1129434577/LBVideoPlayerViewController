@@ -9,3 +9,4 @@ pod 'LBVideoPlayerViewController'
 LBVideoPlayerViewController *videoPlayer = [[LBVideoPlayerViewController alloc] initWithVideoUrl:[NSURL URLWithString:@"http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"] sourceView:sender];
 [self presentViewController:videoPlayer animated:YES completion:NULL];
 ```
+![](https://github.com/A1129434577/LBVideoPlayerViewController/blob/main/LBVideoPlayerViewController.gif?raw=true)
